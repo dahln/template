@@ -60,7 +60,17 @@
             window.location = "api/v1/signout-error";
         }
     </script>
-    
+    <script>
+        function FileSaveAs(filename, fileContent) {
+            var link = document.createElement('a');
+            link.download = filename;
+            link.href = fileContent
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+
 </body>
 
 </html>

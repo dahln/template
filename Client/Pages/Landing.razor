@@ -1,0 +1,49 @@
+﻿@page "/landing"
+
+@using ghostlight.Shared
+
+@inject ghostlight.Client.Services.API API
+@inject ghostlight.Client.Services.AppState _appState
+@inject NavigationManager _navigationManager
+
+<div class="row">
+    <div class="mx-auto">
+        <h3>My Folders</h3>
+    </div>
+</div>
+
+@if (StayingHere)
+{
+    @foreach (var folder in _appState.AuthorizedFolders)
+    {
+        <div class="row">
+            <div class="mx-auto">
+                <a class="btn btn-lg btn-outline-success btn-home mt-2" href="@($"folder/{folder.Id}/customers")">@folder.Name<i class="fas fa-arrow-right ml-2"></i></a>
+            </div>
+        </div>
+    }
+}
+
+@code {
+
+    private bool StayingHere { get; set; }
+
+    async protected override Task OnInitializedAsync()
+    {
+        _appState.OnChange += StateHasChanged;
+
+        await _appState.UpdateAppState();
+
+        if (_appState.AuthorizedFolders.Count() == 0)
+            _navigationManager.NavigateTo("folder");
+        else if (_appState.AuthorizedFolders.Count() == 1)
+            _navigationManager.NavigateTo($"folder/{_appState.AuthorizedFolders.FirstOrDefault().Id}/customers");
+        else if (_appState.CurrentFolderId != null)
+            _navigationManager.NavigateTo($"folder/{_appState.CurrentFolderId}/customers");
+        else if (_appState.AuthorizedFolders.Count() > 1)
+            StayingHere = true;
+        else
+            StayingHere = true;
+    }
+
+}

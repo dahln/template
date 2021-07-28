@@ -8,16 +8,54 @@
 <AuthorizeView>
     <Authorized>
         <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
-            <a class="navbar-brand" href="/"><i class="fas fa-ghost ghostlight-logo mr-3"></i>ghostlight</a>
+            <a class="navbar-brand" href="/"><i class="fas fa-ghost ghostlight-logo mr-3"></i>ghostlight+</a>
+
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navToggle" aria-controls="navToggle" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <div class="collapse navbar-collapse" id="navToggle">
                 <ul class="navbar-nav ml-md-auto">
-                    <li class="nav-item">
-                        <a class="nav-link mr-2" href="customers"><i class="fas fa-search search-icon mr-2"></i>Search</a>
-                    </li>
+                    @if (!string.IsNullOrEmpty(_appState.CurrentFolderId))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link mr-2" href="@($"folder/{_appState.CurrentFolderId}/customers")"><i class="fas fa-search search-icon mr-2"></i>Search</a>
+                        </li>
+                    }
+                    @if (_appState.CurrentFolderId != null)
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle mr-2" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <strong><i class="far fa-folder-open folder-open-color mr-1"></i> @_appState.CurrentFolderName</strong>
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                @if (_appState.AuthorizedFolders.FirstOrDefault(f => f.Id == _appState.CurrentFolderId)?.Administrator == true)
+                                {
+                                    <a class="dropdown-item" href="@($"folder/{_appState.CurrentFolderId}")">
+                                        <i class="fas fa-tools mr-1"></i> @_appState.CurrentFolderName Settings
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                }
+                                @foreach (var org in _appState.AuthorizedFolders.Where(a => a.Id != _appState.CurrentFolderId))
+                                {
+                                    <a class="dropdown-item" href="@($"folder/{org.Id}/customers")">
+                                        <i class="fas fa-arrow-right mr-1"></i> Open @org.Name Folder
+                                    </a>
+                                }
+                                @if (_appState.AuthorizedFolders.Count == 0)
+                                {
+                                    <div class="dropdown-header">
+                                        No Folders. Create One.
+                                    </div>
+                                }
+                                @if (_appState.AuthorizedFolders.Where(a => a.Id != _appState.CurrentFolderId).Count() > 0)
+                                {
+                                    <div class="dropdown-divider"></div>
+                                }
+                                <a class="dropdown-item" href="folder"><i class="fas fa-plus mr-2"></i>Create New Folder</a>
+                            </div>
+                        </li>
+                    }
                     <li class="nav-item">
                         <a class="nav-link mr-2" href="authentication/profile"><i class="fas fa-user-cog user-icon mr-2"></i>@context.User.Identity.Name</a>
                     </li>
@@ -30,12 +68,12 @@
     </Authorized>
     <NotAuthorized>
         <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
-            <a class="navbar-brand" href="/"><i class="fas fa-ghost ghostlight-logo mr-3"></i>ghostlight</a>
+            <a class="navbar-brand" href="/"><i class="fas fa-ghost ghostlight-logo mr-3"></i>ghostlight+</a>
         </nav>
     </NotAuthorized>
 </AuthorizeView>
 
-@code{      
+@code{
     protected override void OnInitialized()
     {
         _appState.OnChange += StateHasChanged;

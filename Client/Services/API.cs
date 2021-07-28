@@ -31,25 +31,86 @@ namespace ghostlight.Client.Services
         }
 
         #region Customer CRUD/Search
-        async public Task<Customer> CustomerCreate(Customer content)
+        async public Task<Customer> CustomerCreate(string folderId, Customer content)
         {
-            return await PostAsync<Customer>("api/v1/customer", content);
+            return await PostAsync<Customer>($"api/v1/folder/{folderId}/customer", content);
         }
-        async public Task<Customer> CustomerGetById(string id)
+        async public Task<Customer> CustomerGetById(string folderId, string id)
         {
-            return await GetAsync<Customer>($"api/v1/customer/{id}");
+            return await GetAsync<Customer>($"api/v1/folder/{folderId}/customer/{id}");
         }
-        async public Task<Customer> CustomerUpdateById(Customer content, string id)
+        async public Task<Customer> CustomerUpdateById(Customer content, string folderId, string id)
         {
-            return await PutAsync<Customer>($"api/v1/customer/{id}", content);
+            return await PutAsync<Customer>($"api/v1/folder/{folderId}/customer/{id}", content);
         }
-        async public Task CustomerDeleteById(string id)
+        async public Task CustomerDeleteById(string folderId, string id)
         {
-            await DeleteAsync($"api/v1/customer/{id}");
+            await DeleteAsync($"api/v1/folder/{folderId}/customer/{id}");
         }
-        async public Task<SearchResponse<CustomerSlim>> CustomerSearch(Search content)
+        async public Task<SearchResponse<CustomerSlim>> CustomerSearch(string folderId, Search content)
         {
-            return await PostAsync<SearchResponse<CustomerSlim>>("api/v1/customers", content);
+            return await PostAsync<SearchResponse<CustomerSlim>>($"api/v1/folder/{folderId}/customers", content);
+        }
+        #endregion
+
+        #region Folder Services
+
+        async public Task<Folder> CreateFolder(Folder model)
+        {
+            return await PostAsync<Folder>("api/v1/folder", model);
+        }
+        async public Task<Folder> UpdateFolder(Folder model, string folderId)
+        {
+            return await PutAsync<Folder>($"api/v1/folder/{folderId}", model);
+        }
+        async public Task DeleteFolder(string folderId)
+        {
+            await DeleteAsync($"api/v1/folder/{folderId}");
+        }
+        async public Task<Folder> GetFolder(string folderId)
+        {
+            return await GetAsync<Folder>($"api/v1/folder/{folderId}");
+        }
+        async public Task<List<FolderAuthorization>> GetOrgnaizationAuthorization()
+        {
+            return await GetAsync<List<FolderAuthorization>>($"api/v1/authorized/folder");
+        }
+
+        async public Task<AuthorizedUser> FolderAddAuthorizedUser(AuthorizedUser model, string folderId)
+        {
+            return await PutAsync<AuthorizedUser>($"api/v1/folder/{folderId}/authorized", model);
+        }
+        async public Task FolderDeleteAuthorizedUser(string folderId, string authorizedUserId)
+        {
+            await DeleteAsync($"api/v1/folder/{folderId}/authorized/{authorizedUserId}");
+        }
+        async public Task<AuthorizedUser> FolderToggleAdmin(string folderId, string authorizedId)
+        {
+            return await GetAsync<AuthorizedUser>($"api/v1/folder/{folderId}/authorized/{authorizedId}/admin");
+        }
+        async public Task<AuthorizedUser> FolderToggleWrite(string folderId, string authorizedId)
+        {
+            return await GetAsync<AuthorizedUser>($"api/v1/folder/{folderId}/authorized/{authorizedId}/write");
+        }
+        async public Task<AuthorizedUser> FolderToggleRead(string folderId, string authorizedId)
+        {
+            return await GetAsync<AuthorizedUser>($"api/v1/folder/{folderId}/authorized/{authorizedId}/read");
+        }
+        async public Task<AuthorizedUser> FolderToggleDelete(string folderId, string authorizedId)
+        {
+            return await GetAsync<AuthorizedUser>($"api/v1/folder/{folderId}/authorized/{authorizedId}/delete");
+        }
+        async public Task<string> UploadFile(UploadFile model, string folderId, string customerId)
+        {
+            return await PostAsync<string>($"api/v1/folder/{folderId}/customer/{customerId}/file", model);
+        }
+        async public Task<UploadFile> DownloadFileByCompanyIdFileId(string customerId, string folderId, string fileId)
+        {
+            return await GetAsync<UploadFile>($"api/v1/folder/{folderId}/customer/{customerId}/file/{fileId}");
+        }
+        async public Task DeleteFileByCompanyIdFileId(string customerId, string folderId, string fileId)
+        {
+            await DeleteAsync($"api/v1/folder/{folderId}/customer/{customerId}/file/{fileId}");
         }
         #endregion
 

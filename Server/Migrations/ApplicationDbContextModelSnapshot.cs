@@ -14,7 +14,7 @@ namespace ghostlight.Server.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "5.0.0");
+                .HasAnnotation("ProductVersion", "5.0.5");
 
             modelBuilder.Entity("IdentityServer4.EntityFramework.Entities.DeviceFlowCodes", b =>
                 {
@@ -251,6 +251,36 @@ namespace ghostlight.Server.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
+            modelBuilder.Entity("ghostlight.Server.Entities.AuthorizedUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Administrator")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("Delete")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FolderId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Read")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("Write")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FolderId");
+
+                    b.ToTable("AuthorizedUsers");
+                });
+
             modelBuilder.Entity("ghostlight.Server.Entities.Customer", b =>
                 {
                     b.Property<string>("Id")
@@ -274,6 +304,9 @@ namespace ghostlight.Server.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("FolderId")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("Gender")
                         .HasColumnType("INTEGER");
 
@@ -284,9 +317,6 @@ namespace ghostlight.Server.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Notes")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("OwnerId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Phone")
@@ -301,11 +331,56 @@ namespace ghostlight.Server.Migrations
                     b.Property<DateTime?>("UpdateOn")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("FolderId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Customers");
+                });
+
+            modelBuilder.Entity("ghostlight.Server.Entities.CustomerFile", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CustomerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("Data")
+                        .HasColumnType("BLOB");
+
+                    b.Property<string>("FileType")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PrettyFileName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Uploaded")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("CustomerFiles");
+                });
+
+            modelBuilder.Entity("ghostlight.Server.Entities.Folder", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Folders");
                 });
 
             modelBuilder.Entity("ghostlight.Server.Models.ApplicationUser", b =>
@@ -423,13 +498,50 @@ namespace ghostlight.Server.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ghostlight.Server.Entities.AuthorizedUser", b =>
+                {
+                    b.HasOne("ghostlight.Server.Entities.Folder", "Folder")
+                        .WithMany("AuthorizedUsers")
+                        .HasForeignKey("FolderId");
+
+                    b.Navigation("Folder");
+                });
+
             modelBuilder.Entity("ghostlight.Server.Entities.Customer", b =>
                 {
-                    b.HasOne("ghostlight.Server.Models.ApplicationUser", "Owner")
-                        .WithMany()
-                        .HasForeignKey("OwnerId");
+                    b.HasOne("ghostlight.Server.Entities.Folder", "Folder")
+                        .WithMany("Customers")
+                        .HasForeignKey("FolderId");
 
-                    b.Navigation("Owner");
+                    b.HasOne("ghostlight.Server.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Folder");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ghostlight.Server.Entities.CustomerFile", b =>
+                {
+                    b.HasOne("ghostlight.Server.Entities.Customer", "Customer")
+                        .WithMany("Files")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("ghostlight.Server.Entities.Customer", b =>
+                {
+                    b.Navigation("Files");
+                });
+
+            modelBuilder.Entity("ghostlight.Server.Entities.Folder", b =>
+                {
+                    b.Navigation("AuthorizedUsers");
+
+                    b.Navigation("Customers");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,0 +1,183 @@
+﻿@page "/folder"
+@page "/folder/{FolderId}"
+
+@using Microsoft.AspNetCore.Authorization
+@using ghostlight.Shared
+
+@inject ghostlight.Client.Services.API API
+@inject Blazored.LocalStorage.ILocalStorageService _localStorage
+@inject NavigationManager _navigationManager
+@inject ghostlight.Client.Services.AppState _appState
+@inject IToastService _toastService
+@inject IModalService _modalService
+
+<div class="col-md-12">
+    <h3 class="mb-2 mt-3">Folder</h3>
+    <div class="col-md-6 mt-5">
+        <div class="row">
+            <div class="input-group input-group-lg">
+                <input type="text" class="form-control" @bind="SelectedFolder.Name" placeholder="Folder Name" aria-label="Name" aria-describedby="button-addon2" />
+                <div class="input-group-append">
+                    <button class="btn btn-outline-dark" type="button" id="button-addon2" @onclick="SaveFolderName">Save Folder Name</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(FolderId))
+{
+    <div class="col-md-12">
+        <h3 class="mb-2 text-muted mt-5">Manage Authorized Users/Owners</h3>
+        <p>
+            Add or remove users who should have access to this folder. Add the email address of the user - be sure to spell it correctly.
+        </p>
+        <div class="col-md-6">
+            <div class="row">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" @bind="NewAuthorizedUser.Email" placeholder="User's Email Address" aria-label="User's Email Address" aria-describedby="button-addon2" />
+                    <div class="input-group-append">
+                        <button class="btn btn-success" type="button" id="button-addon2" @onclick="AddAuthorizedUser">Add User</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">Email Address</th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in SelectedFolder.AuthorizedUsers)
+                    {
+                        <tr>
+                            <th scope="row">@user.Email</th>
+                            <td>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="@($"authorized_admin_{@user.Email}")" checked="@(user.Administrator ? "checked" : null )" @onchange="(() => ToggleAdmin(user))" />
+                                    <label class="custom-control-label" for="@($"authorized_admin_{@user.Email}")">Folder Administrator</label>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="@($"authorized_write_{@user.Email}")" checked="@(user.Write ? "checked" : null )" @onchange="(() => ToggleWrite(user))" />
+                                    <label class="custom-control-label" for="@($"authorized_write_{@user.Email}")">Customer Write</label>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="@($"authorized_read_{@user.Email}")" checked="@(user.Read ? "checked" : null )" @onchange="(() => ToggleRead(user))" />
+                                    <label class="custom-control-label" for="@($"authorized_read_{@user.Email}")">Customer Read</label>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="@($"authorized_delete_{@user.Email}")" checked="@(user.Delete ? "checked" : null )" @onchange="(() => ToggleDelete(user))" />
+                                    <label class="custom-control-label" for="@($"authorized_delete_{@user.Email}")">Customer Delete</label>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="btn btn-danger" @onclick="(() => RemoveAuthorizedUser(user))"><i class="fas fa-trash-alt"></i></div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <h3 class="mb-2 text-muted mt-5">Delete Folder</h3>
+        <p>
+            This will delete the Folder and all associated data. This action cannot be undone! Your account will remain active, but the Folder will be deleted.
+        </p>
+        <div class="mt-1">
+            <input type="button" class="btn btn-danger" value="Delete Folder" @onclick="DeleteFolder" />
+        </div>
+    </div>
+}
+
+
+@code {
+
+    [Parameter]
+    public string FolderId { get; set; }
+    private ghostlight.Shared.Folder SelectedFolder { get; set; } = new ghostlight.Shared.Folder();
+    private AuthorizedUser NewAuthorizedUser { get; set; } = new AuthorizedUser();
+
+    async protected override Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrEmpty(FolderId))
+        {
+            SelectedFolder = await API.GetFolder(FolderId);
+        }
+        else
+        {
+            SelectedFolder = new ghostlight.Shared.Folder();
+        }
+    }
+
+    public async Task SaveFolderName()
+    {
+        if (string.IsNullOrEmpty(FolderId))
+        {
+            SelectedFolder = await API.CreateFolder(SelectedFolder);
+            await _appState.UpdateAppState(SelectedFolder.Id);
+            _navigationManager.NavigateTo($"/folder/{SelectedFolder.Id}");
+        }
+        else
+        {
+            SelectedFolder = await API.UpdateFolder(SelectedFolder, FolderId);
+            await _appState.UpdateAppState(SelectedFolder.Id);
+        }
+    }
+
+    public async Task DeleteFolder()
+    {
+        await API.DeleteFolder(FolderId);
+        await _localStorage.RemoveItemAsync("FolderId");
+        await _appState.UpdateAppState();
+        _toastService.ShowSuccess("Deleted Folder. Redirecting...");
+        _navigationManager.NavigateTo("landing");
+    }
+
+    public async Task AddAuthorizedUser()
+    {
+        var response = await API.FolderAddAuthorizedUser(NewAuthorizedUser, FolderId);
+        SelectedFolder.AuthorizedUsers.Add(response);
+        NewAuthorizedUser = new AuthorizedUser();
+    }
+
+    public async Task RemoveAuthorizedUser(AuthorizedUser user)
+    {
+        await API.FolderDeleteAuthorizedUser(FolderId, user.Id);
+        SelectedFolder.AuthorizedUsers = SelectedFolder.AuthorizedUsers.Where(a => a.Id != user.Id).ToList();
+    }
+
+    public async Task ToggleAdmin(AuthorizedUser user)
+    {
+        user = await API.FolderToggleAdmin(FolderId, user.Id);
+    }
+
+    public async Task ToggleRead(AuthorizedUser user)
+    {
+        user = await API.FolderToggleRead(FolderId, user.Id);
+    }
+
+    public async Task ToggleWrite(AuthorizedUser user)
+    {
+        user = await API.FolderToggleWrite(FolderId, user.Id);
+    }
+
+    public async Task ToggleDelete(AuthorizedUser user)
+    {
+        user = await API.FolderToggleDelete(FolderId, user.Id);
+    }
+}

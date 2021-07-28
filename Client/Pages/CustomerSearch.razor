@@ -1,4 +1,4 @@
-﻿@page "/customers"
+﻿@page "/folder/{FolderId}/customers"
 
 @using ghostlight.Shared
 @using ghostlight.Shared.Enumerations
@@ -10,7 +10,7 @@
 
 <div class="row mt-3">
     <div class="col-md-12">
-        <a href="customer" class="btn btn-success float-right"><i class="fas fa-plus mr-2"></i>Add Customer</a>
+        <a href="@($"/folder/{_appState.CurrentFolderId}/customer")" class="btn btn-success float-right"><i class="fas fa-plus mr-2"></i>Add Customer</a>
     </div>
 </div>
 
@@ -79,23 +79,9 @@
                             }
                         }
                     </th>
-                    <th width="20%" scope="col" @onclick="(() => Sort(nameof(ghostlight.Shared.CustomerSlim.Active)))" class="pointer">
+                    <th width="20%" scope="col" @onclick="(() => Sort(nameof(ghostlight.Shared.CustomerSlim.City)))" class="pointer">
                         Active
-                        @if (Search.SortBy == nameof(ghostlight.Shared.CustomerSlim.Active))
-                        {
-                            @if (Search.SortDirection == SortDirection.Ascending)
-                            {
-                                <i class="fas fa-angle-down"></i>
-                            }
-                            else if (Search.SortDirection == SortDirection.Descending)
-                            {
-                                <i class="fas fa-angle-up"></i>
-                            }
-                        }
-                    </th>
-                    <th width="10%" scope="col" @onclick="(() => Sort(nameof(ghostlight.Shared.CustomerSlim.Gender)))" class="pointer">
-                        Gender
-                        @if (Search.SortBy == nameof(ghostlight.Shared.CustomerSlim.Gender))
+                        @if (Search.SortBy == nameof(ghostlight.Shared.CustomerSlim.City))
                         {
                             @if (Search.SortDirection == SortDirection.Ascending)
                             {
@@ -115,31 +101,7 @@
                     <tr class="pointer">
                         <td><div class="btn btn-link" @onclick="(() => SelectCustomer(item.Id))">@item.Name</div></td>
                         <td class="align-middle">@item.State</td>
-                        <td class="align-middle">
-                            @if (item.Active)
-                            {
-                                <i class="fas fa-check green"></i>
-                            }
-                            else
-                            {
-                                <i class="fas fa-times red"></i>
-                            }
-                        </td>
-                        <td class="align-middle">
-                            @if (item.Gender == Gender.Male)
-                            {
-                                <i class="fas fa-mars mr-1"></i>
-                            }
-                            else if (item.Gender == Gender.Female)
-                            {
-                                <i class="fas fa-venus mr-1"></i>
-                            }
-                            else
-                            {
-                                <i class="fas fa-genderless mr-1"></i>
-                            }
-                            @item.Gender.GetDescription()
-                        </td>
+                        <td class="align-middle">@item.City</td>
                     </tr>
                 }
             </tbody>
@@ -170,6 +132,8 @@
 </div>
 
 @code {
+    [Parameter]
+    public string FolderId { get; set; }
 
     private Search Search { get; set; } = new Search();
     int PageSize { get; set; } = 15;
@@ -179,6 +143,8 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        await _appState.UpdateAppState(FolderId);
+
         var cachedSearch = await localStorage.GetItemAsync<Search>("CustomerSearch");
         if (cachedSearch == null)
         {
@@ -211,7 +177,7 @@
 
         await localStorage.SetItemAsync("CustomerSearch", Search);
 
-        var response = await API.CustomerSearch(Search);
+        var response = await API.CustomerSearch(FolderId, Search);
         Items = response.Data;
         TotalFound = response.Total;
     }
@@ -228,6 +194,6 @@
 
     private void SelectCustomer(string customerId)
     {
-        _navigationManger.NavigateTo($"customer/{customerId}");
+        _navigationManger.NavigateTo($"folder/{FolderId}/customer/{customerId}");
     }
 }

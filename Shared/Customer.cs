@@ -5,6 +5,38 @@ using ghostlight.Shared.Enumerations;
 
 namespace ghostlight.Shared
 {
+    public class Folder
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+
+        public List<AuthorizedUser> AuthorizedUsers { get; set; } = new List<AuthorizedUser>();
+    }
+
+    public class AuthorizedUser
+    {
+        public string Id { get; set; }
+        public string Email { get; set; }
+        public bool Administrator { get; set; }
+
+        public bool Read { get; set; }
+        public bool Write { get; set; }
+        public bool Delete { get; set; }
+    }
+
+    public class FolderAuthorization
+    {
+        /// <summary>
+        /// Folder.Id
+        /// </summary>
+        public string Id { get; set; }
+
+        public string Name { get; set; }
+        public bool Administrator { get; set; }
+        public bool Read { get; set; }
+        public bool Write { get; set; }
+        public bool Delete { get; set; }
+    }
     public class Customer
     {
         public string Id { get; set; }
@@ -20,6 +52,8 @@ namespace ghostlight.Shared
         public Gender Gender { get; set; }
         public bool Active { get; set; }
         public string ImageBase64 { get; set; }
+        public List<CustomerFile> Files { get; set; } = new List<CustomerFile>();
+
 
         public override int GetHashCode()
         {
@@ -36,7 +70,22 @@ namespace ghostlight.Shared
         public string Id { get; set; }
         public string Name { get; set; }
         public string State { get; set; }
+        public string City { get; set; }
         public Gender Gender { get; set; }
         public bool Active { get; set; }
+    }
+
+    public class CustomerFile
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public DateTime Uploaded { get; set; }
+    }
+
+    public class UploadFile
+    {
+        public string FileName { get; set; }
+        public byte[] Data { get; set; }
+        public string MimeType { get; set; }
     }
 }

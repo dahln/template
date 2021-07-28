@@ -1,7 +1,36 @@
-﻿namespace ghostlight.Server.Utility
+﻿using System.Linq;
+
+namespace ghostlight.Server.Utility
 {
     static public class ToSharedModels
     {
+        static public Shared.Folder ToSharedFolder(this Entities.Folder model)
+        {
+            var folder = new Shared.Folder()
+            {
+                Id = model.Id,
+                Name = model.Name,
+                AuthorizedUsers = model.AuthorizedUsers.Select(a => a.ToSharedAuthorizedUser()).ToList()
+            };
+
+            return folder;
+        }
+
+        static public Shared.AuthorizedUser ToSharedAuthorizedUser(this Entities.AuthorizedUser model)
+        {
+            var authorizedUser = new Shared.AuthorizedUser()
+            {
+                Id = model.Id,
+                Email = model.Email,
+                Administrator = model.Administrator,
+                Write = model.Write,
+                Read = model.Read,
+                Delete = model.Delete
+            };
+
+            return authorizedUser;
+        }
+
         static public Shared.CustomerSlim ToSharedCustomerSlim(this Entities.Customer model)
         {
             var customer = new Shared.CustomerSlim()
@@ -37,5 +66,6 @@
 
             return customer;
         }
+
     }
 }

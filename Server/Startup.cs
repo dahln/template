@@ -35,7 +35,7 @@ namespace ghostlight.Server
         {
 
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlite($"Data Source=ghostlight.db"));
+                options.UseSqlite($"Data Source=ghostlight-plus.db"));
 
             /* 
             Preference is to use MSSQL. SQLite is used for demo purposes.
@@ -56,13 +56,23 @@ namespace ghostlight.Server
             }).AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.AddIdentityServer()
-                .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
+                .AddApiAuthorization<ApplicationUser, ApplicationDbContext>(options =>
+                {
+                    options.IdentityResources["openid"].UserClaims.Add("role");
+                    options.ApiResources.Single().UserClaims.Add("role");
+                    options.ApiResources.Single().UserClaims.Add("email");
+                });
 
             services.AddAuthentication()
                 .AddIdentityServerJwt();
             
             services.AddSingleton<EmailConfiguration>(Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>());
             services.AddTransient<IEmailSender, EmailSender>();
+
+            services.AddScoped<IsFolderAdministratorFilter>();
+            services.AddScoped<CanFolderWriteFilter>();
+            services.AddScoped<CanFolderReadFilter>();
+            services.AddScoped<CanFolderDeleteFilter>();
 
             services.AddControllersWithViews();
 

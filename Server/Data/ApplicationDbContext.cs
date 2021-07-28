@@ -19,16 +19,24 @@ namespace ghostlight.Server.Data
         {
         }
 
+        public DbSet<Folder> Folders { get; set; }
+        public DbSet<AuthorizedUser> AuthorizedUsers { get; set; }
         public DbSet<Customer> Customers { get; set; }
+        public DbSet<CustomerFile> CustomerFiles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            
-            //modelBuilder.Entity<FolderAuthorizedUser>()
-            //    .HasOne(c => c.Folder)
-            //    .WithMany(c => c.AuthorizedUsers)
+
+            //modelBuilder.Entity<Customer>()
+            //    .HasOne(c => c.User)
+            //    .WithMany(c => c.Customers)
             //    .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CustomerFile>()
+                .HasOne(c => c.Customer)
+                .WithMany(x => x.Files)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
