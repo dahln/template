@@ -11,18 +11,7 @@
     <Authorized>
             <div class="row">
                 <div class="mx-auto">
-
-                    <div class="card" style="width: 18rem;">
-                        <div class="card-body">
-                            <h5 class="card-title">Demo/Dev Tools</h5>
-                            <p class="card-text">Quickly populate or clear your customer data, for demo or debugging.</p>
-                            <div class="card-body">
-                                <input type="button" class="btn btn-primary w-100" value="Seed Customers" @onclick="SeedDB" />
-                                <input type="button" class="btn btn-warning w-100" value="Clear Your Records" @onclick="SeedDBClear" />
-                            </div>
-                        </div>
-                    </div>
-
+                    <h3>You Are Signed In</h3>
                 </div>
             </div>
     </Authorized>
@@ -51,7 +40,7 @@
 </div>
 <div class="row">
     <div class="mx-auto">
-        <a class="btn btn-lg btn-outline-primary btn-home" href="https://github.com/dahln/ghostlight" target="_blank">Go to Github</a>
+        <a class="btn btn-lg btn-outline-primary btn-home" href="https://github.com/dahln/ghostlight/tree/plus" target="_blank">Go to Github</a>
     </div>
 </div>
 <div class="row mt-5">
@@ -79,20 +68,5 @@
         var result = await _appState.UpdateAppState(FolderId);
     }
 
-    private async Task SeedDB()
-    {
-        await API.SeedDB(50);
-    }
-    private async Task SeedDBClear()
-    {
-        var modal = _modalService.Show<ConfirmDialog>("Are you sure you want to clear your customer data?");
-        var modalResult = await modal.Result;
-
-        if (modalResult.Cancelled) { }
-        else
-        {
-            await API.SeedDBClear();
-        }
-    }
 }
 

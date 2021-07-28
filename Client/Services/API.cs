@@ -114,16 +114,6 @@ namespace ghostlight.Client.Services
         }
         #endregion
 
-        async public Task SeedDB(int number)
-        {
-            await GetAsync($"api/v1/seed/create/{number}");
-        }
-        async public Task SeedDBClear()
-        {
-            await GetAsync($"api/v1/seed/clear");
-        }
-
-
         #region HTTP Methods
         private async Task GetAsync(string path)
         {
