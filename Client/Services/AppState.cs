@@ -22,6 +22,7 @@ namespace ghostlight.Client.Services
         {
             _api = api;
             _localStorage = localStorage;
+            AuthorizedFolders = new List<FolderAuthorization>();
 
             _authenticationStateProvider = authenticationStateProvider;
         }
